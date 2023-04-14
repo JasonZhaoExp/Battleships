@@ -1,11 +1,11 @@
 # Battleships
-> Developed by Jason
-> Version 1.0
+Developed by Jason
+Version 1.0
 
 ## Dependencies
-> pyfiglet
-> simple-term-menu
-> termcolor
+pyfiglet
+simple-term-menu
+termcolor
 
 ## Setup and usage
 Run these commands in cmd:
