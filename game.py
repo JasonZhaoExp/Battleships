@@ -34,40 +34,36 @@ class Game:
         self.mineNumber = 0
         self.shipNumber = 3
         self.lives = 3
-        difficulties = ["Easy", "Medium", "Hard", "Impossible", "One Life", "Custom"]
-        difficulty_index = SelectionMenu.get_selection(difficulties)
-        if difficulties[difficulty_index] == "Easy":
-            self.mineNumber = 3
-        elif difficulties[difficulty_index] == "Medium":
-            self.mineNumber = 5
-        elif difficulties[difficulty_index] == "Hard":
-            self.mineNumber = 10
-        elif difficulties[difficulty_index] == "Impossible":
-            self.mineNumber = 20
-        elif difficulties[difficulty_index] == "One Life":
-            self.mineNumber = 20
+        difficulties = {
+            'Easy': 3,
+            'Medium': 5,
+            'Hard': 10,
+            'Impossible': 20,
+            'One Life': 20,
+            'Custom': None
+        }
+
+        difficulty_index = SelectionMenu.get_selection(list(difficulties.keys()))
+        difficulty = list(difficulties.keys())[difficulty_index]
+
+        if difficulty == 'One Life':
             self.lives = 1
-        elif difficulties[difficulty_index] == "Custom":
+            self.mineNumber = difficulties[difficulty]
+        elif difficulty == 'Custom':
             while True:
-                self.mineNumber = int(input("Enter the number of mines (up to 50): "))
-                if self.mineNumber > 50:
-                    print("Please enter a number less than 50.")
-                else:
-                    break
-            while True:
-                self.lives = int(input("Enter the number of lives (up to 50): "))
-                if self.lives > 50:
-                    print("Please enter a number less than 50.")
-                else:
-                    break
-            while True:
-                self.shipNumber = int(input("Enter the number of ships (up to 50):  "))
-                if self.shipNumber > 50:
-                    print("Please enter a number less than 50.")
-                else:
-                    break
-        elif difficulty_index == 6:
-            quit()
+                try:
+                    self.mineNumber = int(input('Enter the number of mines (up to 50): '))
+                    self.lives = int(input('Enter the number of lives (up to 50): '))
+                    self.shipNumber = int(input('Enter the number of ships (up to 50): '))
+                    if self.mineNumber <= 50 and self.lives <= 50 and self.shipNumber <= 50:
+                        break
+                    else:
+                        print('Please enter a number less than or equal to 50.')
+                except ValueError:
+                    print('Please enter a valid integer.')
+        else:
+            self.mineNumber = difficulties[difficulty]
+
         for i in range(self.shipNumber):
             while True:
                 ship = ((random.randint(0, self.board.size - 1), random.randint(0, self.board.size - 1)))
@@ -81,9 +77,11 @@ class Game:
                 if mine not in self.mines and mine not in self.ships:
                     self.mines.append(mine)
                     break
-        return difficulties[difficulty_index]
     
     def start(self):
+
+        # Initialize the moves list
+        moves = []
 
         # Print the initial board
         self.board.print_board()
@@ -96,7 +94,13 @@ class Game:
             # Ask the player for a guess
             guess = input("Enter a guess (format: row,column): ")
             guess = guess.split(",")
-            guess_row, guess_col = map(int, guess)
+            while True:
+                guess_row, guess_col = map(int, guess)
+                if (guess_row, guess_col) in moves:
+                    print(termcolor.colored("You have already guessed that location!", "yellow"))
+                else:
+                    break
+                
             subprocess.run(['clear' if os.name == 'posix' else 'cls'], shell=True)
             
             # Check if the guess is a hit, mine or miss
@@ -116,7 +120,10 @@ class Game:
 
             # Print the updated board
             self.board.print_board()
-            
+
+            # Add the move to the moves list
+            moves.append((guess_row, guess_col))
+
             # Check if the player has won
         if self.hits == self.shipNumber:
             print(termcolor.colored("You sunk all the battleships! Congratulations!", "green"))
